@@ -157,14 +157,13 @@ class Promotion(ABC):
         pass
 
 class PercentageDiscount(Promotion):
-    def __init__(self, percentage: float):
-        super().__init__(f"{percentage}% Discount")
-        self.percentage = percentage
-
+    def __init__(self, name: str, percent: float):
+        super().__init__(name)
+        self.percent = percent
 
     def apply_promotion(self, product, quantity) -> float:
         total_price = product.price * quantity
-        discount_amount = total_price * (self.percentage / 100)
+        discount_amount = total_price * (self.percent / 100)
         return total_price - discount_amount
 
 class SecondItemHalfPrice(Promotion):

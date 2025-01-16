@@ -1,4 +1,4 @@
-from products import Product, NonStockedProduct, LimitedProduct
+from products import Product, NonStockedProduct, LimitedProduct, SecondItemHalfPrice, BuyTwoGetOneFree, PercentageDiscount
 from store import Store
 
 
@@ -80,6 +80,17 @@ def main():
         LimitedProduct("Shipping", price=10, quantity=250, maximum=1)
     ]
 
+    # Create promotion catalog
+    second_half_price = SecondItemHalfPrice()  # Instanziierung ohne Parameter
+    third_one_free = BuyTwoGetOneFree()  # Instanziierung ohne Parameter
+    thirty_percent = PercentageDiscount("30% off!", percent=30)
+  # Instanziierung mit Name und Prozent
+
+    # Add promotions to products
+    product_list[0].set_promotion(second_half_price)  # Setzt die zweite Artikel zum halben Preis auf das erste Produkt
+    product_list[1].set_promotion(third_one_free)  # Setzt "Kaufe zwei, bekomme einen kostenlos" auf das zweite Produkt
+    product_list[2].set_promotion(thirty_percent)  # Setzt den 30%-Rabatt auf das dritte Produkt
+
     # Create a store with the initial product list
     best_buy = Store(product_list)
 
@@ -89,4 +100,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
