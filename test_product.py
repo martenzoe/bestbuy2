@@ -1,5 +1,5 @@
 import pytest
-from products import Product, NonStockedProduct, LimitedProduct
+from products import Product, NonStockedProduct, LimitedProduct, PercentageDiscount, SecondItemHalfPrice, BuyTwoGetOneFree
 
 
 def test_create_normal_product():
@@ -83,3 +83,35 @@ def test_non_stocked_product_set_quantity():
     # Setzen der Menge sollte nichts bewirken und keine Ausnahme auslösen
     non_stocked_product.set_quantity(10)
     assert non_stocked_product.quantity == 0  # Die Menge bleibt immer bei 0
+
+
+def test_percentage_discount():
+    product = Product("Test Product", 100.0, 10)
+    discount = PercentageDiscount(20)
+    product.set_promotion(discount)
+
+    assert product.buy(5) == 400.0  # (100 * 5) - (20% von (100 * 5))
+
+
+def test_second_item_half_price():
+    product = Product("Test Product", 100.0, 10)
+    discount = SecondItemHalfPrice()
+    product.set_promotion(discount)
+
+    assert product.buy(3) == 250.0  # (100 + 100/2 + 100)
+
+
+def test_buy_two_get_one_free():
+    product = Product("Test Product", 100.0, 10)
+    discount = BuyTwoGetOneFree()
+    product.set_promotion(discount)
+
+    assert product.buy(3) == 200.0  # (100 * 2)
+
+
+def test_show_product_with_promotion():
+    product = Product("Test Product", 100.0, 10)
+    discount = PercentageDiscount(20)
+    product.set_promotion(discount)
+
+    assert product.show() == "Test Product, Price: 100.0, Quantity: 10, Promotion: 20% Discount"

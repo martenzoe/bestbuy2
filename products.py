@@ -1,3 +1,6 @@
+from abc import ABC, abstractmethod
+
+
 class Product:
     def __init__(self, name: str, price: float, quantity: int):
         """
@@ -19,6 +22,7 @@ class Product:
         self.price = price
         self.quantity = quantity
         self.active = True  # active is set to True by default
+        self.promotion = None  # Initialize promotion as None
 
     def get_quantity(self) -> float:
         """
@@ -36,7 +40,7 @@ class Product:
         :raises ValueError: If the new quantity is negative.
         """
         if quantity < 0:
-            raise ValueError("Quantity cannot be empty")
+            raise ValueError("Quantity cannot be negative")
 
         self.quantity = quantity
 
@@ -59,32 +63,58 @@ class Product:
         """Deactivate the product."""
         self.active = False
 
+    def set_promotion(self, promotion):
+        """Set a promotion for the product."""
+        self.promotion = promotion
+
+    def remove_promotion(self):
+        """Remove the promotion from the product."""
+        self.promotion = None
+
     def show(self) -> str:
         """
         Get a string representation of the product.
 
         :return: A string containing the product's name, price, and quantity.
+                 Also includes promotion information if applicable.
         """
-        return f"{self.name}, Price: {self.price}, Quantity: {self.quantity}"
+        promo_info = f", Promotion: {self.promotion.name}" if self.promotion else ""
+        return f"{self.name}, Price: {self.price}, Quantity: {self.quantity}{promo_info}"
 
     def buy(self, quantity: int) -> float:
         """
         Purchase a specified quantity of the product.
 
         :param quantity: The quantity to purchase.
-        :return: The total price for the purchased quantity.
-        :raises ValueError: If the requested quantity is non-positive,
-                            exceeds available stock, or if the product is not active.
-        """
+        :return: The total price for the purchased quantity after applying any promotions.
+                  Raises ValueError if conditions are not met.
+
+                  If a promotion exists, it should determine the price using the promotion method apply_promotion.
+
+                  Raises ValueError if requested quantity is non-positive,
+                  exceeds available stock, or if the product is not active.
+
+                  If no promotion exists, it calculates based on standard pricing.
+
+                  """
+
         if quantity <= 0:
             raise ValueError("Quantity must be positive")
-
-        if quantity > self.quantity:
-            raise ValueError("Not enough stock available")
 
         if not self.active:
             raise ValueError("Product is not active")
 
+        if quantity > self.quantity:
+            raise ValueError("Not enough stock available")
+
+        # Calculate total price considering promotions
+        if self.promotion:
+            total_price = self.promotion.apply_promotion(self, quantity)
+            # Reduce stock based on purchased items
+            self.quantity -= quantity
+            return total_price
+
+            # Standard pricing calculation
         total_price = quantity * self.price
         self.quantity -= quantity
 
@@ -116,3 +146,55 @@ class LimitedProduct(Product):
 
     def show(self) -> str:
         return f"{self.name}, Price: {self.price}, Quantity: {self.quantity}, Maximum per order: {self.maximum}"
+
+
+class Promotion(ABC):
+    def __init__(self, name: str):
+        self.name = name
+
+    @abstractmethod
+    def apply_promotion(self, product, quantity) -> float:
+        pass
+
+class PercentageDiscount(Promotion):
+    def __init__(self, percentage: float):
+        super().__init__(f"{percentage}% Discount")
+        self.percentage = percentage
+
+
+    def apply_promotion(self, product, quantity) -> float:
+        total_price = product.price * quantity
+        discount_amount = total_price * (self.percentage / 100)
+        return total_price - discount_amount
+
+class SecondItemHalfPrice(Promotion):
+    def __init__(self):
+        super().__init__("Second Item at Half Price")
+
+    def apply_promotion(self, product, quantity) -> float:
+        # Wenn weniger als 2 Artikel gekauft werden, gibt es keinen Rabatt
+        if quantity < 1:
+            return product.price * quantity
+
+        # Berechnung des Gesamtpreises unter Berücksichtigung des Rabatts
+        total_price = 0.0
+
+        # Für jedes Paar von Artikeln: das erste zum vollen Preis, das zweite zum halben Preis
+        pairs = quantity // 2
+        total_price += pairs * (product.price + (product.price / 2))  # Preis für Paare
+
+        # Überbleibende Artikel (ungerade Anzahl)
+        remainder = quantity % 2
+        total_price += remainder * product.price  # Preis für verbleibende Artikel
+
+        return total_price
+
+
+class BuyTwoGetOneFree(Promotion):
+    def __init__(self):
+        super().__init__("Buy 2, Get 1 Free")
+
+    def apply_promotion(self, product, quantity) -> float:
+        free_items = quantity // 3
+        payable_items = quantity - free_items
+        return product.price * payable_items
