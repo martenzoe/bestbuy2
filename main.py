@@ -1,10 +1,11 @@
 from products import Product, NonStockedProduct, LimitedProduct, SecondItemHalfPrice, BuyTwoGetOneFree, PercentageDiscount
 from store import Store
 
-
 def start(store):
     """
     Start the interactive menu for the store.
+
+    Provides options to list products, show total quantities, make orders, and quit.
 
     :param store: The Store object to interact with.
     """
@@ -25,7 +26,7 @@ def start(store):
                 for product in products:
                     print(product.show())
             except ValueError as e:
-                print(e)
+                print(f"Error: {e}")
 
         elif choice == '2':
             # Show total amount in store
@@ -57,7 +58,7 @@ def start(store):
                 total_price = store.order(order_list)
                 print(f"Total price of your order: {total_price:.2f}")
             except ValueError as e:
-                print(e)
+                print(f"Error: {e}")
 
         elif choice == '4':
             print("Thank you for visiting the store!")
@@ -66,10 +67,11 @@ def start(store):
         else:
             print("Invalid choice. Please select a valid option.")
 
-
 def main():
     """
     Main function to set up the initial inventory and start the store menu.
+
+    Initializes a list of products, assigns promotions, and starts the interactive menu.
     """
     # Setup initial stock of inventory
     product_list = [
@@ -81,22 +83,20 @@ def main():
     ]
 
     # Create promotion catalog
-    second_half_price = SecondItemHalfPrice()  # Instanziierung ohne Parameter
-    third_one_free = BuyTwoGetOneFree()  # Instanziierung ohne Parameter
+    second_half_price = SecondItemHalfPrice()
+    third_one_free = BuyTwoGetOneFree()
     thirty_percent = PercentageDiscount("30% off!", percent=30)
-  # Instanziierung mit Name und Prozent
 
     # Add promotions to products
-    product_list[0].set_promotion(second_half_price)  # Setzt die zweite Artikel zum halben Preis auf das erste Produkt
-    product_list[1].set_promotion(third_one_free)  # Setzt "Kaufe zwei, bekomme einen kostenlos" auf das zweite Produkt
-    product_list[2].set_promotion(thirty_percent)  # Setzt den 30%-Rabatt auf das dritte Produkt
+    product_list[0].set_promotion(second_half_price)
+    product_list[1].set_promotion(third_one_free)
+    product_list[2].set_promotion(thirty_percent)
 
     # Create a store with the initial product list
     best_buy = Store(product_list)
 
     # Start the interactive menu
     start(best_buy)
-
 
 if __name__ == "__main__":
     main()
